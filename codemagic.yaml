@@ -8,8 +8,6 @@ workflows:
       android_signing:
         - autodev_keystore
     scripts:
-      - name: Get packages
-        script: flutter pub get
       - name: Regenerate Android platform
         script: |
           rm -rf android
@@ -25,6 +23,8 @@ workflows:
           rm -rf android/app/src/main/kotlin
           mkdir -p android/app/src/main/kotlin/uz/autodev/app
           cp android_overrides/MainActivity.kt android/app/src/main/kotlin/uz/autodev/app/MainActivity.kt
+      - name: Get packages
+        script: flutter pub get
       - name: Build release APK
         script: flutter build apk --release --build-name=1.0.0 --build-number=$BUILD_NUMBER
     artifacts:
