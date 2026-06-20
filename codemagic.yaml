@@ -1,37 +1,34 @@
 workflows:
   android-release:
     name: AutoDev Android Release
-    max_build_duration: 60
+    max_build_duration: 120
     environment:
       flutter: 3.24.0
       java: 17
-      groups:
-        - android_signing   # Contains CM_KEYSTORE, CM_KEY_ALIAS, etc.
-      vars:
-        PACKAGE_NAME: "uz.autodev.app"
+      android_signing:
+        - autodev_keystore
     scripts:
-      - name: Set up key.properties
+      - name: Get packages
+        script: flutter pub get
+      - name: Regenerate Android platform
         script: |
-          cat >> "$CM_BUILD_DIR/android/key.properties" <<EOF
-          storePassword=$CM_KEYSTORE_PASSWORD
-          keyPassword=$CM_KEY_PASSWORD
-          keyAlias=$CM_KEY_ALIAS
-          storeFile=$CM_KEYSTORE_PATH
-          EOF
-      - name: Get Flutter packages
-        script: flutter packages pub get
-      - name: Flutter analyze
-        script: flutter analyze --no-fatal-infos
-      - name: Build Android release APK
+          rm -rf android
+          flutter create --platforms=android --org uz.autodev .
+      - name: Apply AutoDev Android customizations
         script: |
-          flutter build apk \
-            --release \
-            --build-name=1.0.0 \
-            --build-number=1
+          cp android_overrides/app_build.gradle android/app/build.gradle
+          cp android_overrides/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_overrides/proguard-rules.pro android/app/proguard-rules.pro
+          mkdir -p android/app/src/main/res/xml
+          cp android_overrides/network_security_config.xml android/app/src/main/res/xml/
+          cp android_overrides/file_paths.xml android/app/src/main/res/xml/
+          rm -rf android/app/src/main/kotlin
+          mkdir -p android/app/src/main/kotlin/uz/autodev/app
+          cp android_overrides/MainActivity.kt android/app/src/main/kotlin/uz/autodev/app/MainActivity.kt
+      - name: Build release APK
+        script: flutter build apk --release --build-name=1.0.0 --build-number=$BUILD_NUMBER
     artifacts:
-      - build/**/outputs/**/*.apk
-      - build/**/outputs/**/mapping.txt
-      - flutter_drive.log
+      - build/app/outputs/flutter-apk/app-release.apk
     publishing:
       email:
         recipients:
