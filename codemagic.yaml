@@ -12,16 +12,28 @@ workflows:
         script: |
           set -e
           cd "$CM_BUILD_DIR"
+          echo "=== BEFORE REGENERATE ==="
           echo "PWD=`pwd`"
-          echo "LIST BEFORE:"
+          echo "FILES:"
           ls -la
+          echo ""
+          echo "=== REMOVING OLD ANDROID ==="
           rm -rf android
-          flutter create --platforms=android --org uz.autodev --project-name autodev .
-          echo "LIST AFTER CREATE:"
+          echo ""
+          echo "=== RUNNING FLUTTER CREATE ==="
+          flutter create --platforms=android --org uz.autodev --project-name autodev --verbose .
+          echo ""
+          echo "=== AFTER FLUTTER CREATE ==="
           ls -la
-          echo "ANDROID LIST:"
-          ls -la android
-          test -d android
+          echo ""
+          echo "=== CHECKING ANDROID DIR ==="
+          if [ -d android ]; then
+            echo "SUCCESS: android directory exists"
+            ls -la android
+          else
+            echo "ERROR: android directory NOT found"
+            exit 1
+          fi
       - name: Apply AutoDev Android customizations
         script: |
           set -e
