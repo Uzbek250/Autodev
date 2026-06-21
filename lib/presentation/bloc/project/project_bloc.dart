@@ -30,7 +30,6 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     on<ProjectCreateEvent>(_onCreate);
     on<ProjectPlanApprovedEvent>(_onPlanApproved);
     on<ProjectPlanRejectedEvent>(_onPlanRejected);
-    on<ProjectThinkingCompleteEvent>(_onThinkingComplete);
     on<ProjectEngineerProgressEvent>(_onEngineerProgress);
     on<ProjectEngineerCompleteEvent>(_onEngineerComplete);
     on<ProjectDeployZipEvent>(_onDeployZip);
