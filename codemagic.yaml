@@ -8,38 +8,31 @@ workflows:
       android_signing:
         - autodev_keystore
     scripts:
-      - name: Regenerate Android platform
+      - name: Regenerate Android platform (in isolated temp dir)
         script: |
           set -e
           cd "$CM_BUILD_DIR"
-          echo "=== BEFORE REGENERATE ==="
-          echo "PWD=`pwd`"
-          echo "FILES:"
-          ls -la
-          echo ""
-          echo "=== REMOVING OLD ANDROID ==="
+          TMP_DIR=$(mktemp -d)
+          echo "Scaffolding fresh Android project in $TMP_DIR ..."
+          flutter create --platforms=android --org uz.autodev --project-name autodev "$TMP_DIR/scaffold"
+          
+          echo "Removing old android/ directory..."
           rm -rf android
-          echo ""
-          echo "=== RUNNING FLUTTER CREATE ==="
-          flutter create --platforms=android --org uz.autodev --project-name autodev --verbose .
-          echo ""
-          echo "=== AFTER FLUTTER CREATE ==="
-          ls -la
-          echo ""
-          echo "=== CHECKING ANDROID DIR ==="
-          if [ -d android ]; then
-            echo "SUCCESS: android directory exists"
-            ls -la android
-          else
-            echo "ERROR: android directory NOT found"
-            exit 1
-          fi
+          
+          echo "Copying freshly generated android/ into project root..."
+          cp -R "$TMP_DIR/scaffold/android" ./android
+          
+          rm -rf "$TMP_DIR"
+          
+          echo "Verifying android directory exists:"
+          ls -la android
+          test -d android || (echo "ERROR: android directory still missing!" && exit 1)
       - name: Apply AutoDev Android customizations
         script: |
           set -e
           cd "$CM_BUILD_DIR"
-          echo "PWD=`pwd`"
-          ls -la
+          test -d android/app || (echo "ERROR: android/app missing before applying overrides!" && exit 1)
+          
           cp android_overrides/app_build.gradle android/app/build.gradle
           cp android_overrides/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           cp android_overrides/proguard-rules.pro android/app/proguard-rules.pro
@@ -49,6 +42,9 @@ workflows:
           rm -rf android/app/src/main/kotlin
           mkdir -p android/app/src/main/kotlin/uz/autodev/app
           cp android_overrides/MainActivity.kt android/app/src/main/kotlin/uz/autodev/app/MainActivity.kt
+          
+          echo "Final android/app structure:"
+          find android/app/src/main -maxdepth 3
       - name: Get packages
         script: |
           set -e
