@@ -1,17 +1,16 @@
 workflows:
-  android-release:
-    name: AutoDev Android Release
-    max_build_duration: 120
+  android-debug:
+    name: AutoDev Android Debug
+    max_build_duration: 60
     environment:
       flutter: 3.24.0
       java: 17
-      android_signing:
-        - autodev_keystore
     scripts:
+      - name: Get packages
+        script: flutter pub get
       - name: Regenerate Android platform (in isolated temp dir)
         script: |
           set -e
-          cd "$CM_BUILD_DIR"
           TMP_DIR=$(mktemp -d)
           echo "Scaffolding fresh Android project in $TMP_DIR ..."
           flutter create --platforms=android --org uz.autodev --project-name autodev "$TMP_DIR/scaffold"
@@ -30,7 +29,6 @@ workflows:
       - name: Apply AutoDev Android customizations
         script: |
           set -e
-          cd "$CM_BUILD_DIR"
           test -d android/app || (echo "ERROR: android/app missing before applying overrides!" && exit 1)
           
           cp android_overrides/app_build.gradle android/app/build.gradle
@@ -45,24 +43,8 @@ workflows:
           
           echo "Final android/app structure:"
           find android/app/src/main -maxdepth 3
-      - name: Get packages
+      - name: Build debug APK
         script: |
-          set -e
-          cd "$CM_BUILD_DIR"
-          echo "PWD=`pwd`"
-          flutter pub get
-      - name: Build release APK
-        script: |
-          set -e
-          cd "$CM_BUILD_DIR"
-          echo "PWD=`pwd`"
-          flutter build apk --release --build-name=1.0.0 --build-number=$BUILD_NUMBER
+          flutter build apk --debug --build-name=1.0.0 --build-number=$BUILD_NUMBER
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
-    publishing:
-      email:
-        recipients:
-          - your@email.com
-        notify:
-          success: true
-          failure: true
+      - build/app/outputs/flutter-apk/app-debug.apk
