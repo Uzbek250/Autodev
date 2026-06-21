@@ -2,35 +2,40 @@ workflows:
   android-debug:
     name: AutoDev Android Debug
     max_build_duration: 60
+    instance_type: mac_mini_m2
+
     environment:
       flutter: 3.24.0
       java: 17
+
     scripts:
       - name: Get packages
         script: flutter pub get
+
       - name: Regenerate Android platform (in isolated temp dir)
         script: |
           set -e
           TMP_DIR=$(mktemp -d)
           echo "Scaffolding fresh Android project in $TMP_DIR ..."
           flutter create --platforms=android --org uz.autodev --project-name autodev "$TMP_DIR/scaffold"
-          
+
           echo "Removing old android/ directory..."
           rm -rf android
-          
+
           echo "Copying freshly generated android/ into project root..."
           cp -R "$TMP_DIR/scaffold/android" ./android
-          
+
           rm -rf "$TMP_DIR"
-          
+
           echo "Verifying android directory exists:"
           ls -la android
           test -d android || (echo "ERROR: android directory still missing!" && exit 1)
+
       - name: Apply AutoDev Android customizations
         script: |
           set -e
           test -d android/app || (echo "ERROR: android/app missing before applying overrides!" && exit 1)
-          
+
           cp android_overrides/app_build.gradle android/app/build.gradle
           cp android_overrides/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           cp android_overrides/proguard-rules.pro android/app/proguard-rules.pro
@@ -40,11 +45,18 @@ workflows:
           rm -rf android/app/src/main/kotlin
           mkdir -p android/app/src/main/kotlin/uz/autodev/app
           cp android_overrides/MainActivity.kt android/app/src/main/kotlin/uz/autodev/app/MainActivity.kt
-          
+
+          echo "Patching Kotlin plugin version to 1.9.24 (matches transitive dependency stdlib)..."
+          sed -i.bak -E 's/(id "org\.jetbrains\.kotlin\.android" version ")[^"]+(")/\11.9.24\2/' android/settings.gradle
+          rm -f android/settings.gradle.bak
+          grep -n "kotlin.android" android/settings.gradle
+
           echo "Final android/app structure:"
           find android/app/src/main -maxdepth 3
+
       - name: Build debug APK
         script: |
           flutter build apk --debug --build-name=1.0.0 --build-number=$BUILD_NUMBER
+
     artifacts:
       - build/app/outputs/flutter-apk/app-debug.apk
