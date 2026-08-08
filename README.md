@@ -9,15 +9,15 @@ AutoDev — foydalanuvchi g'oyasini tabiiy tilda (O'zbek/Ingliz) kiritsa, bir ne
 ```
 Foydalanuvchi g'oyasi
     ↓
-[Analyst Agent]  → Kimi K2.6  — savollar + eskiz
+[Analyst Agent]  → DeepSeek V4-Flash — savollar + eskiz
     ↓
 Foydalanuvchi tasdiqlashi
     ↓
-[Thinking Agent] → Kimi K2.6  — texnik spetsifikatsiya
+[Thinking Agent] → DeepSeek V4-Flash — texnik spetsifikatsiya
     ↓
-[Engineer Agent] → Kimi K2.7-code — fayl-fayl kod
+[Engineer Agent] → DeepSeek V4-Flash — fayl-fayl kod
     ↓
-[Auto-Fix Loop]  → Kimi K2.7-code — 5 ta urinishgacha
+[Auto-Fix Loop]  → DeepSeek V4-Flash — 5 ta urinishgacha
     ↓
 ZIP Arxiv  |  Vercel Deploy
 ```
@@ -32,7 +32,7 @@ ZIP Arxiv  |  Vercel Deploy
 | Baza           | SQLite (sqflite)     |
 | Xavfsiz saqlash| flutter_secure_storage|
 | HTTP           | dio ^5.4.0           |
-| AI Provider    | Moonshot AI (Kimi)   |
+| AI Provider    | DeepSeek API          |
 
 ## O'rnatish
 
@@ -40,7 +40,7 @@ ZIP Arxiv  |  Vercel Deploy
 
 - Flutter SDK 3.24+
 - Android Studio / VS Code
-- Moonshot AI API kaliti → [platform.moonshot.cn](https://platform.moonshot.cn)
+- DeepSeek API kaliti → [platform.deepseek.com](https://platform.deepseek.com)
 - (Ixtiyoriy) Vercel token → [vercel.com/account/tokens](https://vercel.com/account/tokens)
 
 ### 2. Loyihani klonlash
@@ -60,7 +60,7 @@ flutter run
 ### 4. API kalitlarini sozlash
 
 Ilova ichida **Sozlamalar** ↗ sahifasiga o'ting:
-- **Kimi API Kalit** — Moonshot platformasidan olingan kalit
+- **DeepSeek API Kalit** — platform.deepseek.com'dan olingan kalit
 - **Vercel Token** — faqat Vercel deploy uchun kerak
 
 Kalitlar `flutter_secure_storage` orqali **shifrlangan** holda saqlanadi, hech qanday serverga yuborilmaydi.
@@ -111,7 +111,7 @@ lib/
 ├── data/
 │   ├── datasources/
 │   │   ├── local/     # SQLite database helper
-│   │   └── remote/    # Kimi API datasource
+│   │   └── remote/    # DeepSeek API datasource
 │   ├── models/        # SQLite to/from entity map'lar
 │   └── repositories/  # Repository implementatsiyalari
 ├── domain/

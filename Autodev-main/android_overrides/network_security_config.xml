@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- No cleartext (HTTP) traffic anywhere in the app. All real endpoints
+         (api.deepseek.com, api.vercel.com) are HTTPS, so no per-domain
+         allowlist is needed — this just makes the deny-by-default explicit. -->
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>
