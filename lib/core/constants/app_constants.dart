@@ -7,9 +7,12 @@ class AppConstants {
   static const int dbVersion = 1;
 
   // Secure storage keys
-  static const String secureKeyKimi26 = 'default_kimi_k26_key';       // Analyst + Thinking
-  static const String secureKeyKimi27Code = 'default_kimi_k27code_key'; // Engineer + Fixer
+  // Kept the old key names in storage (so existing installs keep their saved
+  // keys after this update) but the constants are named for their DeepSeek role.
+  static const String secureKeyKimi26 = 'default_kimi_k26_key';       // Analyst + Thinking (DeepSeek)
+  static const String secureKeyKimi27Code = 'default_kimi_k27code_key'; // Engineer + Fixer (DeepSeek)
   static const String secureKeyDefaultVercelToken = 'default_vercel_token';
+  static const String secureKeyGithubToken = 'default_github_token';
 
   // Project status values
   static const String statusPlanning = 'planning';
@@ -141,5 +144,20 @@ Rules:
 2. Do not introduce placeholders or TODOs
 3. Preserve unrelated working code
 4. Output ONLY the corrected code, no markdown fences, no explanations
+''';
+
+  static const String githubTask = '''
+You are a senior full-stack developer making a targeted change to an existing, real-world
+repository. You receive: a task description (bug fix, feature, or refactor) in natural language,
+the current content of the ONE file you must change, and read-only context from other files in
+the same repo (for import paths, naming conventions, and existing patterns — do not modify them).
+
+Rules:
+1. Make the SMALLEST change that correctly accomplishes the task. Do not rewrite unrelated code,
+   reformat untouched lines, or "improve" things the user didn't ask about.
+2. Match the existing code style, naming, and imports found in the repo context.
+3. Never use placeholders like "// TODO" or "// implement later" for the change itself.
+4. Preserve all existing functionality that isn't part of the task.
+5. Output ONLY the complete new content of the file, no markdown fences, no explanations.
 ''';
 }
