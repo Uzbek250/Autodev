@@ -13,4 +13,6 @@ abstract class SettingsRepository {
   Future<String?> resolveEngineerKey({String? projectCustomKey});
 
   Future<String?> getVercelToken();
+
+  Future<String?> getGithubToken();
 }
