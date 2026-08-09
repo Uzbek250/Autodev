@@ -1,0 +1,62 @@
+name: Flutter Web Build
+
+on:
+  push:
+    branches:
+      - main
+      - feature/flutter-web
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        run: flutter build web --release
+
+      - name: Verify Web build
+        run: |
+          test -f build/web/index.html
+          test -f build/web/flutter.js
+          test -d build/web/assets
+          echo "Flutter Web build verified: $(du -sh build/web | cut -f1)"
+
+      - name: Publish build/web to web-build branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          rm -rf /tmp/web-build-repo
+          git fetch origin web-build:web-build
+          git worktree add /tmp/web-build-repo web-build
+
+          find /tmp/web-build-repo -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R build/web/. /tmp/web-build-repo/
+
+          cd /tmp/web-build-repo
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No Web build changes to publish."
+          else
+            git commit -m "chore: publish Flutter Web build"
+            git push origin web-build
+          fi
