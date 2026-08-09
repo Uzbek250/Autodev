@@ -179,6 +179,32 @@ class AiRepositoryImpl implements AiRepository {
       return Result.error(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Result<String>> applyGitHubTask({
+    required String taskDescription,
+    required String filePath,
+    required String currentCode,
+    required Map<String, String> repoContext,
+    required String apiKey,
+  }) async {
+    try {
+      final code = await _remote.applyGitHubTask(
+        taskDescription: taskDescription,
+        filePath: filePath,
+        currentCode: currentCode,
+        repoContext: repoContext,
+        apiKey: apiKey,
+      );
+      return Result.success(code);
+    } on NetworkException catch (e) {
+      return Result.error(NetworkFailure(e.message));
+    } on ServerException catch (e) {
+      return Result.error(ServerFailure(e.message));
+    } catch (e) {
+      return Result.error(ServerFailure(e.toString()));
+    }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -337,10 +363,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final k27 = await _secure.read(key: AppConstants.secureKeyKimi27Code);
     final vercel = await _secure.read(
         key: AppConstants.secureKeyDefaultVercelToken);
+    final github = await _secure.read(key: AppConstants.secureKeyGithubToken);
     return AppSettingsEntity(
       kimiK26Key: k26,
       kimiK27CodeKey: k27,
       defaultVercelToken: vercel,
+      githubToken: github,
       theme: (row?['theme'] as String?) ?? 'dark',
       language: (row?['language'] as String?) ?? 'uz',
     );
@@ -358,12 +386,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
     if (settings.kimiK27CodeKey != null) {
       await _secure.write(
-          key: AppConstants.secureKeyKimi27Code, value: settings.kimiK27CodeKey);
+          key: AppConstants.secureKeyKimiK27Code, value: settings.kimiK27CodeKey);
     }
     if (settings.defaultVercelToken != null) {
       await _secure.write(
           key: AppConstants.secureKeyDefaultVercelToken,
           value: settings.defaultVercelToken);
+    }
+    if (settings.githubToken != null) {
+      await _secure.write(
+          key: AppConstants.secureKeyGithubToken, value: settings.githubToken);
     }
   }
 
@@ -388,5 +420,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<String?> getVercelToken() async {
     return _secure.read(key: AppConstants.secureKeyDefaultVercelToken);
+  }
+
+  @override
+  Future<String?> getGithubToken() async {
+    return _secure.read(key: AppConstants.secureKeyGithubToken);
   }
 }
