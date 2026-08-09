@@ -25,6 +25,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final _vercelController = TextEditingController();
   bool _vercelObscure = true;
 
+  // GitHub
+  final _githubController = TextEditingController();
+  bool _githubObscure = true;
+
   String _selectedTheme = 'dark';
   String _selectedLanguage = 'uz';
   bool _hasChanges = false;
@@ -40,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _k26Controller.dispose();
     _k27Controller.dispose();
     _vercelController.dispose();
+    _githubController.dispose();
     super.dispose();
   }
 
@@ -47,6 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _k26Controller.text = s.kimiK26Key ?? '';
     _k27Controller.text = s.kimiK27CodeKey ?? '';
     _vercelController.text = s.defaultVercelToken ?? '';
+    _githubController.text = s.githubToken ?? '';
     _selectedTheme = s.theme;
     _selectedLanguage = s.language;
   }
@@ -99,9 +105,9 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Kimi API Keys ─────────────────────────────────────────
+                // ── DeepSeek API Keys ─────────────────────────────────────
                 const SectionHeader(
-                  title: '🔑 Kimi (Moonshot AI) Kalitlar',
+                  title: '🔑 DeepSeek API Kalitlar',
                   subtitle: 'Har bir model uchun alohida kalit kerak',
                 ),
                 const SizedBox(height: 12),
@@ -113,10 +119,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // K2.6 — Analyst + Thinking
+                // Analyst + Thinking
                 _ApiKeyField(
-                  label: '🧠 Kimi K2.6 — Analyst & Thinking',
-                  hint: 'sk-K1sQR...',
+                  label: '🧠 DeepSeek — Analyst & Thinking',
+                  hint: 'sk-...',
                   controller: _k26Controller,
                   obscure: _k26Obscure,
                   onToggleObscure: () =>
@@ -128,10 +134,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: 14),
 
-                // K2.7-code — Engineer + Fixer
+                // Engineer + Fixer
                 _ApiKeyField(
-                  label: '⚙️ Kimi K2.7-Code — Engineer & Fixer',
-                  hint: 'sk-A7ibb...',
+                  label: '⚙️ DeepSeek — Engineer & Fixer',
+                  hint: 'sk-...',
                   controller: _k27Controller,
                   obscure: _k27Obscure,
                   onToggleObscure: () =>
@@ -158,6 +164,26 @@ class _SettingsPageState extends State<SettingsPage> {
                   onChanged: (_) => setState(() => _hasChanges = true),
                   helperText: 'vercel.com → Account → Tokens',
                   accentColor: Colors.white54,
+                ),
+                const SizedBox(height: 28),
+
+                // ── GitHub ────────────────────────────────────────────────
+                const SectionHeader(
+                  title: '🐙 GitHub',
+                  subtitle: 'Mavjud repo\'larda vazifa bajarish uchun',
+                ),
+                const SizedBox(height: 14),
+                _ApiKeyField(
+                  label: 'GitHub Token',
+                  hint: 'ghp_...',
+                  controller: _githubController,
+                  obscure: _githubObscure,
+                  onToggleObscure: () =>
+                      setState(() => _githubObscure = !_githubObscure),
+                  onChanged: (_) => setState(() => _hasChanges = true),
+                  helperText:
+                      'github.com → Settings → Developer settings → Personal access tokens ("repo" huquqi bilan)',
+                  accentColor: Colors.white70,
                 ),
                 const SizedBox(height: 28),
 
@@ -262,7 +288,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 6),
                 _InfoRow(label: 'Versiya', value: '1.0.0'),
                 const SizedBox(height: 6),
-                _InfoRow(label: 'AI Provider', value: 'Moonshot AI (Kimi)'),
+                _InfoRow(label: 'AI Provider', value: 'DeepSeek'),
                 const SizedBox(height: 6),
                 _InfoRow(label: 'Saqlash', value: 'Local SQLite + Secure Storage'),
                 const SizedBox(height: 24),
@@ -288,6 +314,7 @@ class _SettingsPageState extends State<SettingsPage> {
       kimiK26Key: _k26Controller.text.trim(),
       kimiK27CodeKey: _k27Controller.text.trim(),
       defaultVercelToken: _vercelController.text.trim(),
+      githubToken: _githubController.text.trim(),
       theme: _selectedTheme,
       language: _selectedLanguage,
     );
@@ -332,9 +359,9 @@ class _KeyStatusCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _KeyDot(label: 'K2.6', isSet: k26Set),
+                    _KeyDot(label: 'Analyst', isSet: k26Set),
                     const SizedBox(width: 12),
-                    _KeyDot(label: 'K2.7-Code', isSet: k27Set),
+                    _KeyDot(label: 'Engineer', isSet: k27Set),
                   ],
                 ),
                 const SizedBox(height: 4),
