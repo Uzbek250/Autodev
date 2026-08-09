@@ -72,6 +72,7 @@ class AppSettingsEntity extends Equatable {
   final String? kimiK26Key;       // Analyst + Thinking agentlar uchun
   final String? kimiK27CodeKey;   // Engineer + Fixer agentlar uchun
   final String? defaultVercelToken;
+  final String? githubToken;      // Personal Access Token — repo o'qish/yozish uchun
   final String theme;
   final String language;
 
@@ -79,6 +80,7 @@ class AppSettingsEntity extends Equatable {
     this.kimiK26Key,
     this.kimiK27CodeKey,
     this.defaultVercelToken,
+    this.githubToken,
     this.theme = 'dark',
     this.language = 'uz',
   });
@@ -87,6 +89,7 @@ class AppSettingsEntity extends Equatable {
     String? kimiK26Key,
     String? kimiK27CodeKey,
     String? defaultVercelToken,
+    String? githubToken,
     String? theme,
     String? language,
   }) {
@@ -94,6 +97,7 @@ class AppSettingsEntity extends Equatable {
       kimiK26Key: kimiK26Key ?? this.kimiK26Key,
       kimiK27CodeKey: kimiK27CodeKey ?? this.kimiK27CodeKey,
       defaultVercelToken: defaultVercelToken ?? this.defaultVercelToken,
+      githubToken: githubToken ?? this.githubToken,
       theme: theme ?? this.theme,
       language: language ?? this.language,
     );
@@ -101,9 +105,16 @@ class AppSettingsEntity extends Equatable {
 
   bool get hasAnalystKey => kimiK26Key != null && kimiK26Key!.isNotEmpty;
   bool get hasEngineerKey => kimiK27CodeKey != null && kimiK27CodeKey!.isNotEmpty;
+  bool get hasGithubToken => githubToken != null && githubToken!.isNotEmpty;
   bool get isFullyConfigured => hasAnalystKey && hasEngineerKey;
 
   @override
-  List<Object?> get props =>
-      [kimiK26Key, kimiK27CodeKey, defaultVercelToken, theme, language];
+  List<Object?> get props => [
+        kimiK26Key,
+        kimiK27CodeKey,
+        defaultVercelToken,
+        githubToken,
+        theme,
+        language,
+      ];
 }
