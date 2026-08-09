@@ -33,4 +33,16 @@ abstract class AiRepository {
     required String errorMessage,
     required String apiKey,
   });
+
+  /// Runs a free-form task (bug fix, feature request, refactor — whatever
+  /// the user asked for in natural language) against a single file from an
+  /// existing GitHub repo, given the surrounding repo context for imports/
+  /// conventions. Returns the complete new file content.
+  Future<Result<String>> applyGitHubTask({
+    required String taskDescription,
+    required String filePath,
+    required String currentCode,
+    required Map<String, String> repoContext,
+    required String apiKey,
+  });
 }
