@@ -2,21 +2,22 @@
 class ApiConstants {
   ApiConstants._();
 
-  // Moonshot AI (Kimi) configuration
-  static const String moonshotBaseUrl = 'https://api.moonshot.ai/v1';
+  // DeepSeek API (OpenAI-compatible)
+  static const String deepSeekBaseUrl = 'https://api.deepseek.com/v1';
   static const String chatCompletionsPath = '/chat/completions';
 
-  static const String modelAnalyst = 'kimi-k2.6';
-  static const String modelThinking = 'kimi-k2.6';
-  static const String modelEngineer = 'kimi-k2.7-code';
-  static const String modelFixer = 'kimi-k2.7-code';
+  // DeepSeek currently exposes these OpenAI-compatible chat models.
+  static const String modelAnalyst = 'deepseek-chat';
+  static const String modelThinking = 'deepseek-chat';
+  static const String modelEngineer = 'deepseek-chat';
+  static const String modelFixer = 'deepseek-chat';
 
   static const double temperatureAnalyst = 0.7;
   static const double temperatureThinking = 0.3;
   static const double temperatureEngineer = 0.2;
   static const double temperatureFixer = 0.2;
 
-  static const int maxTokens = 4096;
+  static const int maxTokens = 16000;
 
   // Vercel configuration
   static const String vercelBaseUrl = 'https://api.vercel.com';
