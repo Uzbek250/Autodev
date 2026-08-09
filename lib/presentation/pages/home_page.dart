@@ -12,6 +12,8 @@ import 'chat_page.dart';
 import 'settings_page.dart';
 import 'progress_page.dart';
 import 'deploy_page.dart';
+import 'github_task_page.dart';
+import '../../domain/usecases/run_github_task_usecase.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -33,6 +35,18 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('AutoDev'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.hub_outlined),
+            tooltip: 'GitHub vazifa',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GitHubTaskPage(
+                  runGitHubTask: context.read<RunGitHubTaskUseCase>(),
+                ),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Sozlamalar',
@@ -251,7 +265,7 @@ class _NewProjectSheetState extends State<_NewProjectSheet> {
                           ),
                         ),
                         Text(
-                          'Mijoz o\'z Kimi API kalitini to\'laydi',
+                          'Mijoz o\'z DeepSeek API kalitini to\'laydi',
                           style: const TextStyle(
                               fontSize: 11, color: Colors.white38),
                         ),
@@ -282,7 +296,7 @@ class _NewProjectSheetState extends State<_NewProjectSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          '🔑 Mijoz Kimi API kaliti',
+                          '🔑 Mijoz DeepSeek API kaliti',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
