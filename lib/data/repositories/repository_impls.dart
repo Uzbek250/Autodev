@@ -386,7 +386,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
     if (settings.kimiK27CodeKey != null) {
       await _secure.write(
-          key: AppConstants.secureKeyKimiK27Code, value: settings.kimiK27CodeKey);
+          key: AppConstants.secureKeyKimi27Code, value: settings.kimiK27CodeKey);
     }
     if (settings.defaultVercelToken != null) {
       await _secure.write(
