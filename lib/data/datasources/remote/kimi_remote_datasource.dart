@@ -201,4 +201,42 @@ Output the complete corrected file content only.
 
     return JsonExtractor.stripCodeFences(raw);
   }
+
+  Future<String> applyGitHubTask({
+    required String taskDescription,
+    required String filePath,
+    required String currentCode,
+    required Map<String, String> repoContext,
+    required String apiKey,
+  }) async {
+    final contextBlock = repoContext.isEmpty
+        ? 'No additional repo context provided.'
+        : repoContext.entries
+            .map((e) => '// ===== ${e.key} (read-only context) =====\n${e.value}')
+            .join('\n\n');
+
+    final userContent = '''
+Task:
+$taskDescription
+
+File to change:
+Path: $filePath
+
+Current content of this file:
+$currentCode
+
+Read-only context from other files in the repo:
+$contextBlock
+''';
+
+    final raw = await _chatCompletion(
+      model: ApiConstants.modelFixer,
+      temperature: ApiConstants.temperatureFixer,
+      systemPrompt: AgentPrompts.githubTask,
+      userContent: userContent,
+      apiKey: apiKey,
+    );
+
+    return JsonExtractor.stripCodeFences(raw);
+  }
 }
