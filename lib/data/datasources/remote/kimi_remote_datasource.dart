@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_constants.dart';
@@ -6,7 +7,7 @@ import '../../../core/error/failures.dart';
 import '../../../core/utils/json_extractor.dart';
 import '../../../domain/entities/project_entity.dart';
 
-/// Raw HTTP datasource for Moonshot AI (Kimi) API.
+/// Raw HTTP datasource for DeepSeek's OpenAI-compatible API.
 /// Throws [ServerException] / [NetworkException] / [ParsingException].
 class KimiRemoteDatasource {
   final Dio _dio;
@@ -14,11 +15,20 @@ class KimiRemoteDatasource {
   KimiRemoteDatasource({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: ApiConstants.moonshotBaseUrl,
+              baseUrl: ApiConstants.deepSeekBaseUrl,
               connectTimeout: ApiConstants.requestTimeout,
               receiveTimeout: ApiConstants.requestTimeout,
               sendTimeout: ApiConstants.requestTimeout,
             ));
+
+  String _normalizeApiKey(String apiKey) => apiKey.trim();
+
+  String _maskedKey(String apiKey) {
+    final key = _normalizeApiKey(apiKey);
+    if (key.isEmpty) return '<empty>';
+    if (key.length <= 8) return '${key.substring(0, 2)}***';
+    return '${key.substring(0, 6)}...${key.substring(key.length - 4)}';
+  }
 
   Future<String> _chatCompletion({
     required String model,
@@ -27,13 +37,26 @@ class KimiRemoteDatasource {
     required String userContent,
     required String apiKey,
   }) async {
+    final normalizedKey = _normalizeApiKey(apiKey);
+    if (normalizedKey.isEmpty) {
+      throw ServerException('DeepSeek API kaliti bo\'sh. Sozlamalarda kiriting.');
+    }
+
+    // Debug log intentionally reveals only the key format, never the secret.
+    developer.log(
+      'DeepSeek request: baseUrl=${ApiConstants.deepSeekBaseUrl}, '
+      'path=${ApiConstants.chatCompletionsPath}, model=$model, '
+      'Authorization=Bearer ${_maskedKey(normalizedKey)}',
+      name: 'AutoDev.DeepSeek',
+    );
+
     Exception? lastException;
     for (var attempt = 0; attempt <= ApiConstants.maxRetries; attempt++) {
       try {
         final response = await _dio.post(
           ApiConstants.chatCompletionsPath,
           options: Options(headers: {
-            'Authorization': 'Bearer $apiKey',
+            'Authorization': 'Bearer $normalizedKey',
             'Content-Type': 'application/json',
           }),
           data: jsonEncode({
@@ -69,10 +92,18 @@ class KimiRemoteDatasource {
         } else if (e.response?.statusCode == 429) {
           lastException =
               ServerException('API cheklovi. Biroz kuting va qaytadan urining.');
-          await Future.delayed(Duration(seconds: 5 * (attempt + 1)));
-          continue;
+          if (attempt < ApiConstants.maxRetries) {
+            await Future.delayed(Duration(seconds: 5 * (attempt + 1)));
+            continue;
+          }
         } else if (e.response?.statusCode == 401) {
-          throw ServerException('Noto\'g\'ri API kalit. Sozlamalarda tekshiring.');
+          developer.log(
+            'DeepSeek returned 401. Authorization format was '
+            'Bearer ${_maskedKey(normalizedKey)}; key secret was not logged.',
+            name: 'AutoDev.DeepSeek',
+          );
+          throw ServerException(
+              'DeepSeek API kaliti rad etildi (401). Kalitni tekshiring.');
         } else if (e.type == DioExceptionType.unknown &&
             e.error?.toString().contains('SocketException') == true) {
           lastException =
@@ -104,7 +135,6 @@ class KimiRemoteDatasource {
       userContent: userIdea,
       apiKey: apiKey,
     );
-
     final json = JsonExtractor.tryExtractObject(raw);
     if (json == null) {
       throw ParsingException(
@@ -120,7 +150,6 @@ class KimiRemoteDatasource {
   }) async {
     final userContent =
         'Foydalanuvchi g\'oyasi:\n$userIdea\n\nAnalitik natija:\n${jsonEncode(analystOutput.toJson())}';
-
     final raw = await _chatCompletion(
       model: ApiConstants.modelThinking,
       temperature: ApiConstants.temperatureThinking,
@@ -128,7 +157,6 @@ class KimiRemoteDatasource {
       userContent: userContent,
       apiKey: apiKey,
     );
-
     final json = JsonExtractor.tryExtractObject(raw);
     if (json == null) {
       throw ParsingException(
@@ -148,7 +176,6 @@ class KimiRemoteDatasource {
         : previousFiles.entries
             .map((e) => '// ===== ${e.key} =====\n${e.value}')
             .join('\n\n');
-
     final userContent = '''
 Project spec (JSON):
 ${jsonEncode(spec.toJson())}
@@ -161,7 +188,6 @@ Description: ${file.description}
 Previously generated files (for import context):
 $prevFilesContext
 ''';
-
     final raw = await _chatCompletion(
       model: ApiConstants.modelEngineer,
       temperature: ApiConstants.temperatureEngineer,
@@ -169,7 +195,6 @@ $prevFilesContext
       userContent: userContent,
       apiKey: apiKey,
     );
-
     return JsonExtractor.stripCodeFences(raw);
   }
 
@@ -190,7 +215,6 @@ $errorMessage
 
 Output the complete corrected file content only.
 ''';
-
     final raw = await _chatCompletion(
       model: ApiConstants.modelFixer,
       temperature: ApiConstants.temperatureFixer,
@@ -198,7 +222,6 @@ Output the complete corrected file content only.
       userContent: userContent,
       apiKey: apiKey,
     );
-
     return JsonExtractor.stripCodeFences(raw);
   }
 
@@ -214,7 +237,6 @@ Output the complete corrected file content only.
         : repoContext.entries
             .map((e) => '// ===== ${e.key} (read-only context) =====\n${e.value}')
             .join('\n\n');
-
     final userContent = '''
 Task:
 $taskDescription
@@ -228,7 +250,6 @@ $currentCode
 Read-only context from other files in the repo:
 $contextBlock
 ''';
-
     final raw = await _chatCompletion(
       model: ApiConstants.modelFixer,
       temperature: ApiConstants.temperatureFixer,
@@ -236,7 +257,6 @@ $contextBlock
       userContent: userContent,
       apiKey: apiKey,
     );
-
     return JsonExtractor.stripCodeFences(raw);
   }
 }
