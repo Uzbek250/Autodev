@@ -6,16 +6,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'data/datasources/local/database_helper.dart';
 import 'data/datasources/remote/kimi_remote_datasource.dart';
+import 'data/datasources/remote/github_remote_datasource.dart';
 import 'data/repositories/repository_impls.dart';
+import 'data/repositories/github_repository_impl.dart';
 import 'domain/repositories/project_repository.dart';
 import 'domain/repositories/ai_repository.dart';
 import 'domain/repositories/deploy_repository.dart';
 import 'domain/repositories/settings_repository.dart';
+import 'domain/repositories/github_repository.dart';
 import 'domain/usecases/create_project_usecase.dart';
 import 'domain/usecases/run_analyst_usecase.dart';
 import 'domain/usecases/run_thinking_usecase.dart';
 import 'domain/usecases/run_engineer_usecase.dart';
 import 'domain/usecases/deploy_project_usecase.dart';
+import 'domain/usecases/run_github_task_usecase.dart';
 import 'presentation/bloc/project/project_bloc.dart';
 import 'presentation/bloc/settings/settings_bloc.dart';
 import 'presentation/pages/home_page.dart';
@@ -50,6 +54,8 @@ void main() async {
   final DeployRepository deployRepo = DeployRepositoryImpl();
   final SettingsRepository settingsRepo =
       SettingsRepositoryImpl(dbHelper, secure);
+  final GitHubRepository githubRepo =
+      GitHubRepositoryImpl(GitHubRemoteDatasource());
 
   // Use cases
   final createProject = CreateProjectUseCase(projectRepo);
@@ -73,10 +79,16 @@ void main() async {
     projectRepository: projectRepo,
     settingsRepository: settingsRepo,
   );
+  final runGithubTask = RunGitHubTaskUseCase(
+    aiRepository: aiRepo,
+    githubRepository: githubRepo,
+    settingsRepository: settingsRepo,
+  );
 
   runApp(AutoDevApp(
     projectRepo: projectRepo,
     settingsRepo: settingsRepo,
+    runGithubTask: runGithubTask,
     projectBloc: ProjectBloc(
       createProject: createProject,
       runAnalyst: runAnalyst,
@@ -93,6 +105,7 @@ void main() async {
 class AutoDevApp extends StatelessWidget {
   final ProjectRepository projectRepo;
   final SettingsRepository settingsRepo;
+  final RunGitHubTaskUseCase runGithubTask;
   final ProjectBloc projectBloc;
   final SettingsBloc settingsBloc;
   final DeployProjectUseCase deployUseCase;
@@ -101,6 +114,7 @@ class AutoDevApp extends StatelessWidget {
     super.key,
     required this.projectRepo,
     required this.settingsRepo,
+    required this.runGithubTask,
     required this.projectBloc,
     required this.settingsBloc,
     required this.deployUseCase,
@@ -113,6 +127,7 @@ class AutoDevApp extends StatelessWidget {
         RepositoryProvider<ProjectRepository>.value(value: projectRepo),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepo),
         RepositoryProvider<DeployProjectUseCase>.value(value: deployUseCase),
+        RepositoryProvider<RunGitHubTaskUseCase>.value(value: runGithubTask),
       ],
       child: MultiBlocProvider(
         providers: [
