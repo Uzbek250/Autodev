@@ -102,7 +102,15 @@ Rules:
 5. Estimate: file_count, api_route_count, complexity_level
 6. Separate MVP vs V2 strictly
 
-You MUST respond with ONLY a single valid JSON object, no markdown fences, no prose outside the JSON.
+CRITICAL FILE-COMPLETENESS RULE FOR REACT/VITE:
+If the project uses React + Vite, the generated file specification MUST ALWAYS include these
+root-level build/configuration files, even if the user did not explicitly request them:
+- package.json: minimal runnable package manifest with dependencies/devDependencies for react,
+  react-dom, vite, and @vitejs/plugin-react, plus scripts for "dev", "build", and "preview".
+- vite.config.js: minimal Vite configuration using @vitejs/plugin-react.
+These files are mandatory infrastructure, not optional feature files. Count them in
+estimated_files. Also ensure the application entry files (for example index.html and src/main.jsx)
+are compatible with this setup.
 
 Output JSON Schema:
 {
@@ -132,6 +140,27 @@ Rules:
 5. If React: use functional components with hooks
 6. If Node.js: use Express with async/await
 7. If CSS: use Tailwind classes or complete CSS
+
+CRITICAL REACT/VITE PROJECT RULE:
+When the project type or technical stack is React + Vite, the project MUST be runnable after
+all generated files are written. The file plan must include package.json and vite.config.js,
+and these files must be generated as complete files, not omitted.
+
+For React + Vite, package.json MUST be a minimal valid manifest containing:
+- "dependencies": "react" and "react-dom"
+- "devDependencies": "vite" and "@vitejs/plugin-react"
+- scripts: "dev": "vite", "build": "vite build", "preview": "vite preview"
+
+Use sensible current-compatible version ranges rather than inventing unusual package names.
+
+For React + Vite, vite.config.js MUST be a complete minimal configuration that imports
+@vitejs/plugin-react and enables the React plugin, for example using defineConfig and plugins:
+[react()]. It must be compatible with the generated package.json.
+
+Never consider a React/Vite project complete if package.json or vite.config.js is missing.
+Before finishing, mentally verify that `npm install` followed by `npm run dev` is supported by
+the generated file set.
+
 8. Output ONLY the code, no markdown fences, no explanations
 ''';
 
